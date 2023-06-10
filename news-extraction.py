@@ -1,12 +1,9 @@
 import os
+import time
 from bs4 import BeautifulSoup
-from selenium.webdriver.common.by import By
 import selenium.webdriver as webdriver
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 import mysql.connector 
 
 mydb = mysql.connector.connect(
@@ -42,55 +39,34 @@ soup = BeautifulSoup(page_source, 'html.parser')
 
 # Find all <span> tags with role="text"
 news = soup.find_all("span", attrs={"role": "text"})
-
-for item in news:
-    text = item.text
-    if text == "Twitter" :
-        break
-    url = item.find_parent('a')['href'] if item.find_parent('a') else None
-    url = "https://www.bbc.com" + url
-    val = ([text,url])
-    mycursor.execute(sql, val)
-    mydb.commit()
-    print("Text:", text)
-    print("URL:" , url)
+refresh_interval = 10
+previous_page_source = browser.page_source
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# refresh_interval = 10
-# previous_page_source = browser.page_source
-# while True:
-#     browser.refresh()
-#     # time.sleep(10)
-#     current_page_source = browser.page_source
-#     if current_page_source != previous_page_source:
-#         print("changed")
-#     else :
-#         print ("Not changed")
-    
-    
-    
-#     previous_page_source = current_page_source
-
-#     WebDriverWait(browser, refresh_interval).until(
-#         EC.presence_of_element_located((By.TAG_NAME, "body"))
-#     )
+while True:
+    browser.refresh()
+    time.sleep(10)
+    for item in news:
+        text = item.text
+        if text == "Twitter":
+            break
+        # Check if the news already exists in the database
+        mycursor.execute("SELECT * FROM news WHERE title = %s", (text,))
+        result = mycursor.fetchone()
+        if result is None:
+            url = item.find_parent('a')['href'] if item.find_parent('a') else None
+            url = "https://www.bbc.com" + url
+            val = (text, url)
+            mycursor.execute(sql, val)
+            mydb.commit()
+            print("Text:", text)
+            print("URL:", url)
+        # else:
+        #     print("News already exists:", text)
+        
+        # Consume the result set
+        mycursor.fetchall()
 
 
 
@@ -103,14 +79,7 @@ for item in news:
 
 
 
-# Refresh the page every 10 seconds
-# while True:
-#     time.sleep(10)  # Delay for 10 seconds
-#     browser.refresh()
 
 
 
 
-
-# Remember to close the browser when you're done
-# browser.quit()
