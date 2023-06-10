@@ -7,6 +7,21 @@ from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
+import mysql.connector 
+
+mydb = mysql.connector.connect(
+    host="127.0.0.1",
+    user="root",
+    password="mmmm1382",
+    database="bbc"
+
+)
+mycursor = mydb.cursor()
+sql = "INSERT INTO news (title, url, publish_date) VALUES (%s, %s, NOW())"
+# val = (["html","kk"])
+# mycursor.execute(sql, val)
+# mydb.commit()
+# print(mycursor.rowcount, "record inserted.")
 
 
 
@@ -30,8 +45,13 @@ news = soup.find_all("span", attrs={"role": "text"})
 
 for item in news:
     text = item.text
+    if text == "Twitter" :
+        break
     url = item.find_parent('a')['href'] if item.find_parent('a') else None
     url = "https://www.bbc.com" + url
+    val = ([text,url])
+    mycursor.execute(sql, val)
+    mydb.commit()
     print("Text:", text)
     print("URL:" , url)
 
