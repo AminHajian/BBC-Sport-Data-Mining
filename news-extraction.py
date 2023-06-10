@@ -18,17 +18,22 @@ firefox_options = Options()
 firefox_options.set_preference('general.useragent.override', user_agent)
 firefox_options.binary_location = "C:/Program Files/Mozilla Firefox/firefox.exe"
 
-# Launch Firefox browser
+# # Launch Firefox browser
 browser = webdriver.Firefox(service=firefox_service, options=firefox_options)
 browser.get("https://www.bbc.com/sport")
 
 page_source = browser.page_source
 soup = BeautifulSoup(page_source, 'html.parser')
+
+# Find all <span> tags with role="text"
 news = soup.find_all("span", attrs={"role": "text"})
 
 for item in news:
-    print(item.text)
-
+    text = item.text
+    url = item.find_parent('a')['href'] if item.find_parent('a') else None
+    url = "https://www.bbc.com" + url
+    print("Text:", text)
+    print("URL:" , url)
 
 
 
