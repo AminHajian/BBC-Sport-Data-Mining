@@ -14,7 +14,7 @@ mydb = mysql.connector.connect(
 
 )
 mycursor = mydb.cursor()
-sql = "INSERT INTO news (title, url, publish_date) VALUES (%s, %s, NOW())"
+sql = "INSERT INTO news (title, url, publish_date) VALUES (%s, %s ,NOW())"
 # val = (["html","kk"])
 # mycursor.execute(sql, val)
 # mydb.commit()
@@ -34,19 +34,14 @@ firefox_options.binary_location = "C:/Program Files/Mozilla Firefox/firefox.exe"
 browser = webdriver.Firefox(service=firefox_service, options=firefox_options)
 browser.get("https://www.bbc.com/sport")
 
-page_source = browser.page_source
-soup = BeautifulSoup(page_source, 'html.parser')
-
-# Find all <span> tags with role="text"
-news = soup.find_all("span", attrs={"role": "text"})
-refresh_interval = 10
-previous_page_source = browser.page_source
-
-
 
 while True:
-    browser.refresh()
-    time.sleep(10)
+    page_source = browser.page_source
+    soup = BeautifulSoup(page_source, 'html.parser')
+
+    # Find all <span> tags with role="text"
+    news = soup.find_all("span", attrs={"role": "text"})
+    
     for item in news:
         text = item.text
         if text == "Twitter":
@@ -57,18 +52,17 @@ while True:
         if result is None:
             url = item.find_parent('a')['href'] if item.find_parent('a') else None
             url = "https://www.bbc.com" + url
+            # image = open("C:/Users/Amin/Desktop/pp.jpg")
             val = (text, url)
             mycursor.execute(sql, val)
             mydb.commit()
             print("Text:", text)
             print("URL:", url)
-        # else:
-        #     print("News already exists:", text)
         
-        # Consume the result set
         mycursor.fetchall()
 
-
+    browser.refresh()
+    time.sleep(10)
 
 
 
