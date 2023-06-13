@@ -1,11 +1,13 @@
 -- CREATE DATABASE BBC;
 USE BBC;
 
-CREATE TABLE news (
-title TEXT,
+CREATE TABLE news(
+Title TEXT,
 url TEXT,
-publish_date DATETIME
-)
+publish_date DATETIME,
+image BLOB
+
+);
 
 SELECT *
 FROM bbc.news
